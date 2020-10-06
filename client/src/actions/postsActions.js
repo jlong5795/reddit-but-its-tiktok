@@ -3,7 +3,7 @@ import axios from "axios";
 import { PROD_URL, DEV_URL } from "../utils/AppUtils";
 
 // Change me to DEV_URL if you are trying to run the app locally
-const URL = PROD_URL;
+const URL = DEV_URL;
 
 export const setCount = (count = 0) => ({
   type: pt.SET_COUNT,

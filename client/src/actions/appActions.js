@@ -4,8 +4,10 @@ import { formatResponse } from "../utils/AppUtils";
 import { PROD_URL, DEV_URL } from "../utils/AppUtils";
 
 // Change me to DEV_URL if you are trying to run the app locally
-const URL = PROD_URL;
-
+const URL = DEV_URL;
+/*
+TODO: Figure out the shape of the queries that come back from Reddit. How will this interact with React-Query hitting this endpoint?
+*/
 export const fetchPostsFromSubreddit = (
   subreddit = "pics",
   query = ""
