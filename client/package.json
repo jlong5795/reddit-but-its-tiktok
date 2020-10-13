@@ -17,6 +17,8 @@
     "react-dom": "^16.13.0",
     "react-icons": "^3.9.0",
     "react-loaders": "^3.0.1",
+    "react-query": "^2.23.1",
+    "react-query-devtools": "^2.6.0",
     "react-redux": "^7.2.0",
     "react-scripts": "3.4.0",
     "react-swipeable": "^5.5.1",

@@ -1,22 +1,52 @@
-import React, { useState, useEffect, useCallback } from "react";
-import "./App.scss";
-import { setCount } from "./actions/postsActions";
-import { fetchPostsFromSubreddit } from "./actions/appActions";
-import { nextPost, fetchCommentsFromPost } from "./actions/postsActions";
-import Home from "./components/Views/Home";
-import { connect } from "react-redux";
-import { FullScreenLoader } from "./components/Loader";
-import { getMediaSrc } from "./utils/PostUtils";
+import React, { useState, useEffect, useCallback } from 'react';
+import './App.scss';
+import { setCount } from './actions/postsActions';
+import { fetchPostsFromSubreddit } from './actions/appActions';
+import { nextPost, fetchCommentsFromPost } from './actions/postsActions';
+import Home from './components/Views/Home';
+import { connect } from 'react-redux';
+import { FullScreenLoader } from './components/Loader';
+import { getMediaSrc } from './utils/PostUtils';
+import { PROD_URL, DEV_URL } from './utils/AppUtils';
+import axios from 'axios'
+
+import { useQuery, useInfiniteQuery } from 'react-query';
+import { ReactQueryDevtools } from 'react-query-devtools'
 
 function App({
   app,
-  data,
   posts,
   count,
   fetchPostsFromSubreddit,
   fetchCommentsFromPost,
-  setCount
+  setCount,
 }) {
+  
+  const URL = DEV_URL
+  /*
+  TODO: Create useEffect to update state with the data as it's returned from query
+  TODO: Create an effect to trigger the fetching of more data
+  */
+
+  // Handles logic required to fetch information from Reddit - must be async
+  const getSubredditPosts = async (key, page, subreddit = 'pics', query = '') => {
+    const queryResult = await fetch(`${URL}/api/r/${subreddit}${query}`);
+    return queryResult.json()
+  };
+
+  const {
+    status,
+    data,
+    isFetching,
+    isFetchingMore,
+    fetchMore,
+    canFetchMore,
+  } = useInfiniteQuery('subRedditPosts', getSubredditPosts, {
+    getFetchMore: (lastGroup, allGroups) => lastGroup.nextCursor,
+  });
+
+  console.log("From react-query", data)
+
   const loadNextPost = useCallback(() => {
     if (count === posts.length - 1) {
       fetchPostsFromSubreddit(app.subreddit, `?after=${app.data.after}`);
@@ -39,45 +69,46 @@ function App({
 
   useEffect(() => {
     // Preload all posts
-    posts.map(post => {
+    posts.map((post) => {
       new Image().src = post.thumbnail;
     });
   }, [posts]);
 
   useEffect(() => {
     if (posts.length) {
-      fetchCommentsFromPost(posts[count].id, "");
+      fetchCommentsFromPost(posts[count].id, '');
     }
   }, [count]);
 
   console.log(app.subreddit);
   return (
-    <div className="App">
+    <div className='App'>
       <FullScreenLoader active={app.fetchingPosts} />
       <Home
         subreddit={app.subreddit}
         fetchPosts={fetchPostsFromSubreddit}
-        post={posts[count] ? posts[count] : { title: "PLACEHOLDER", image: "" }}
+        post={posts[count] ? posts[count] : { title: 'PLACEHOLDER', image: '' }}
         loadNextPost={() => loadNextPost()}
         loadPrevPost={() => loadPreviousPost()}
       />
+      <ReactQueryDevtools initialIsOpen />
     </div>
   );
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   posts: state.posts.posts,
   post: state.posts.post,
   count: state.posts.count,
   data: state.posts.data,
-  app: state.app
+  app: state.app,
 });
 
 const mapDispatchToProps = {
   fetchPostsFromSubreddit,
   fetchCommentsFromPost,
   setCount,
-  nextPost
+  nextPost,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);
